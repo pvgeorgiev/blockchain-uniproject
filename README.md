@@ -10,13 +10,10 @@
    * [Предимства](#предимства)
    * [Недостатъци](#недостатъци)
 4. [Инструменти за разработка и управнелние](#4-инструменти-за-разработка-и-управнелние)
-   * [Език за програмиране](#език-за-програмиране)
-   * [Инструменти за разработка на допълнителни функционалности](#разработка-на-допълнителни-функционалности)
-   * [Инструменти за търговия](#инструменти-за-търговия)
+   * [Примери](#примери)
 5. [Интересни факти](#5-интересни-факти)
 6. [Връзки към:](#6-връзки)
    * [Мобилни портфейли](#мобилни-портфейли)
-   * [Разработка на функционални пространства](#разработка-на-функционални-пространства)
    * [Мрежи за търговия](#мрежи-за-търговия)
 7. [Източници](#7-източници)
 
@@ -61,6 +58,8 @@ Monero има няколко предимства пре криптовалут�
 
 * Адаптивно мащабиране: блоковете на Monero се създават на всеки 2 минути, в сравнение с 10 минути за биткойн. Блоковете на Bitcoin имат максимален размер и колкото се може повече транзакции за 10 минути, не всички от тях намират място в следващия, предстоящ блок. Това води до забавени плащания, както и до неуспешни плащания. Необходими са по-високи такси за транзакции в мрежата на Bitcoin, за да се пригоди към транзакцията в първия наличен блок. Monero е различен в това, че има адаптивен размер на блока, което означава, независимо колко транзакции се извършват в рамките на тези 2 минути, скорошната транзакция винаги ще намери място в следващия блок. Времето на сделката е бързо и плащането на допълнителни транзакционни такси няма да ускори потвърждаването на транзакцията.
 
+* Интегрирането на [Kovri][21] в Monero проекта. Въпреки, че е все още в начален етап, това допълнително ще засили сигурността на Monero. Kovri е I2P рутер написан на C++. I2P е скрита мрежа по подобието на Tor със няколко технически различия. Целта е да се скрие първоисточника на транзакцията, така че другите разклонения да не знаят кой я е създал. Kovri също може да бъде използван за скриването на целия Monero трафик, така че да скрие изобщо ползването на валутата. И все пак това не е имплементирано напълно и все още се правят тестове.
+
 ## Недостатъци ##
 
 #### Какви са Недостатъци на Monero пред другите крипто валути? ###
@@ -69,17 +68,309 @@ Monero има няколко предимства пре криптовалут�
 
 * Поради използването на пръстен с подписи се добавя допълнителна информация към всяка транзакция, което значително увеличава размера на блоковата верига. Към момента, големината на блоковата верига на Monero надвишава 60GB и ще продължи бързо да се увеличава засягайки използваемостта. Това прави много трудоемко добавянето на нови хора към веригата, защото първоначално те ще трябва да обработят цялата тази информация.
 
+* Тъй като не е базирана на Bitcoin, Monero среща затруднения при добавянето на нови функционалности.
 
 # 4. Инструменти за разработка и управнелние #
 
+#### Как да разработваме върху Monero? ####
 
-## Език за програмиране ##
+Един от вариантите е да се използват json-rpc колове от всеки език способен на това (пример [Python](#user-content-python-example)). Друг начин е да използвате публични API на съществуващи Monero услуги (пример [Публични API](#user-content-public-api). Някои Monero функции дори са налични в JavaScript, което може да се види от изходния код на [mymonero.com][24]. Това позволява разработването на някои Уеб приложения само с HTML и JavaScript.
+
+Другия начин е директно да се докоснем до C++ библиотеките на Monero. Обаче няма официална документация и упътване. Въпреки това в мрежата се намират примери как може да се достъпят библиотеките на Monero със C++. Ще разгледаме пример предоставен от [Monero Examples][25], как да достъпи блокчейн мрежата със C++ (пример [Monero C++](#user-content-monero-cpp).
+
+## Примери ##
+
+<span id="python-example"><strong>(Python)</strong></span>
+<br/>
+
+__Взимане на баланса на портфейл__
+    
+    import requests
+    import json
+    
+    def main():
+        url = "http://localhost:18082"/json_rpc"
+        headers = {'content-type': 'application/json'}
+        
+        rpc_input = {
+            "method": "balance"
+        }
+        
+        response = response.posrt(
+            url,
+            data = json.dumps(rpc_input),
+            headers = headers)
+        
+        print(json.dumps(response.json(), indent=4))
+        
+    if __name__ == "__main__"":
+        main()
+
+Функцията генерира следния резултат:
+
+    {
+        "jsonrpc": "2.0",
+        "id": 0,
+        "result": {
+            "unlocked_balance": 4760000000000,
+            "balance": 4760000000000
+        }
+    }
+    
+За още примери на Python посетете следния линк -> [Python for Monero][22]
+
+---
+
+<span id="public-api"><strong>(Публични API)</strong></span>
+<br/>
+
+__Заявка за актуална статистика за монетите__
+
+> Адрес: http://moneroblocks.info/api/get_stats/
+
+Отговор в JSON формат:
+   
+    {
+        "difficulty":36462691353,
+        "height":1843144,
+        "hashrate":303855761.275,
+        "total_emission":"17004173233966300288",
+        "last_reward":2753416616971,
+        "last_timestamp":1558883987
+    }
+
+Към API документацията -> [moneroblocks][23]
+
+---
+
+<span id="monero-cpp"><strong>(Monero C++)</strong></span>
+<br/>
+
+__Достъпване на блокчейн мрежата на Monero със C++__
+
+Класа `MircoCore` е микро версия на cryptonode::core класа. Класа `cryptonode::core` е основния клас с достъп до блоковата верига, който се използва от процеса обработващ заявките на Monero. В този пример `init` метода на класа е най-важния. Главната цел на `init` метода е да създаде инстанция на класа `Blockchain`. `Blockchain` е интерфейс от високо ниво към базата данни на блоковата верига. В примера на по-ниско ниво се намира класа `BlockchainLMDB`, който също може да бъде достъпен през обекта `Blockchain`.
+
+    #include "MicroCore.h"
+    namespace xmreg
+    {
+      MicroCore::MicroCore():
+              m_mempool(m_blockchain_storage),
+              m_blockchain_storage(m_mempool)
+      {}
+      
+      bool
+      MicroCore::init(const string& blockchain_path)
+      {
+          int db_flags = 0;
+
+          db_flags |= MDB_NOSYNC;
+
+          BlockchainDB* db = nullptr;
+          db = new BlockchainLMDB();
+
+          try
+          {
+              db->open(blockchain_path, db_flags);
+          }
+          catch (const std::exception& e)
+          {
+              cerr << "Грешка при отваряне на базата: " << e.what();
+              return false;
+          }
+
+          if(!db->is_open())
+          {
+              return false;
+          }
+          return m_blockchain_storage.init(db, false);
+      }
+
+      Blockchain&
+      MicroCore::get_core()
+      {
+          return m_blockchain_storage;
+      }
+
+      MicroCore::~MicroCore()
+      {
+          m_blockchain_storage.deinit();
+      }
+    }
+    
+Това е главния файл на примера. За да работи програмата са нужни четири входни параметъра:
+* `address` - адреса на Monero
+* `viewkey` - частния ключ асоцииран с предоставения адрес
+* `txhash` - ид на транзакцията, чийто отговор искаме да проверим
+* `bc-path` - пътят до lmdb папката на блоковата верига
+За да стартирате програмата е нужно да подадете коректно поне `bc-path`. Другите опции имат подразбиращи се стойности, които работят
+    
+    #include <iostream>
+    #include <string>
+    #include "src/MicroCore.h"
+    #include "src/CmdLineOptions.h"
+    #include "src/tools.h"
+    
+    using namespace std;
+    using boost::filesystem::path;
+    using boost::filesystem::is_directory;
+
+    // без това няма да работи
+    unsigned int epee::g_test_dbg_lock_sleep = 0;
+
+    int main(int ac, const char* av[]) {
+      xmreg::CmdLineOptions opts {ac, av};
+
+      auto help_opt = opts.get_option<bool>("help");
+
+      if (*help_opt)
+      {
+          return 0;
+      }
+
+      auto address_opt = opts.get_option<string>("address");
+      auto viewkey_opt = opts.get_option<string>("viewkey");
+      auto tx_hash_opt = opts.get_option<string>("txhash");
+      auto bc_path_opt = opts.get_option<string>("bc-path");
+
+      string default_monero_dir = tools::get_default_data_dir();
+      
+      string default_lmdb_dir   = default_monero_dir + "/lmdb";
+
+      string address_str = address_opt ? *address_opt :   "48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU";
+      string viewkey_str = viewkey_opt ? *viewkey_opt : "1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a";
+      string tx_hash_str = tx_hash_opt ? *tx_hash_opt : "66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577";
+      path blockchain_path = bc_path_opt ? path(*bc_path_opt) : path(default_lmdb_dir);
+
+      if (!is_directory(blockchain_path))
+      {
+          cerr << "Given path \"" << blockchain_path   << "\" "
+               << "is not a folder or does not exist" << " "
+               << endl;
+          return 1;
+      }
+      blockchain_path = xmreg::remove_trailing_path_separator(blockchain_path);
+
+      cout << "Blockchain path: " << blockchain_path << endl;
+
+      uint32_t log_level = 0;
+      epee::log_space::get_set_log_detalisation_level(true, log_level);
+      epee::log_space::log_singletone::add_logger(LOGGER_CONSOLE, NULL, NULL);
+     
+      xmreg::MicroCore mcore;
+
+      if (!mcore.init(blockchain_path.string()))
+      {
+          cerr << "Error accessing blockchain." << endl;
+          return 1;
+      }
+      cryptonote::Blockchain& core_storage = mcore.get_core();
+
+      uint64_t height = core_storage.get_current_blockchain_height();
+
+      cout << "Current blockchain height: " << height << endl;
+      
+      cryptonote::account_public_address address;
+
+      if (!xmreg::parse_str_address(address_str,  address))
+      {
+          cerr << "Cant parse string address: " << address_str << endl;
+          return 1;
+      }
+      
+      crypto::secret_key prv_view_key;
+      if (!xmreg::parse_str_secret_key(viewkey_str, prv_view_key))
+      {
+          cerr << "Cant parse view key: " << viewkey_str << endl;
+          return 1;
+      }
+      
+      cryptonote::transaction tx;
+
+      if (!xmreg::get_tx_pub_key_from_str_hash(core_storage, tx_hash_str, tx))
+      {
+          cerr << "Cant find transaction with hash: " << tx_hash_str << endl;
+          return 1;
+      }
 
 
-## Разработка на допълнителни функционалности ##
+      crypto::public_key pub_tx_key = cryptonote::get_tx_pub_key_from_extra(tx);
+
+      if (pub_tx_key == cryptonote::null_pkey)
+      {
+          cerr << "Cant get public key of tx with hash: " << tx_hash_str << endl;
+          return 1;
+      }
+      
+      crypto::key_derivation derivation;
+
+      if (!generate_key_derivation(pub_tx_key, prv_view_key, derivation))
+      {
+          cerr << "Cant get dervied key for: " << "\n"
+               << "pub_tx_key: " << prv_view_key << " and "
+               << "prv_view_key" << prv_view_key << endl;
+          return 1;
+      }
+      cout << "\n"
+           << "address          : <" << xmreg::print_address(address) << ">\n"
+           << "private view key : "  << prv_view_key << "\n"
+           << "tx hash          : <" << tx_hash_str << ">\n"
+           << "public tx key    : "  << pub_tx_key << "\n"
+           << "dervied key      : "  << derivation << "\n" << endl;
+           
+      size_t output_no = tx.vout.size();
+      uint64_t money_transfered {0};
+
+      for (size_t i = 0; i < output_no; ++i)
+      {
+          crypto::public_key pubkey;
+
+          crypto::derive_public_key(derivation,
+                                    i,
+                                    address.m_spend_public_key,
+                                    pubkey);
+
+          const cryptonote::txout_to_key tx_out_to_key
+                  = boost::get<cryptonote::txout_to_key>(tx.vout[i].target);
 
 
-## Инструменти за търговия ##
+          cout << "Output no: " << i << ", " << tx_out_to_key.key;
+
+          if (tx_out_to_key.key == pubkey)
+          {
+              money_transfered += tx.vout[i].amount;
+              cout << ", mine key: " << cryptonote::print_money(tx.vout[i].amount) << endl;
+          }
+          else
+          {
+              cout << ", not mine key " << endl;
+          }
+    }
+    cout << "\nTotal xmr received: " << cryptonote::print_money(money_transfered) << endl;
+    cout << "\nEnd of program." << endl;
+
+    return 0;
+
+Изпълняваме програмата както следва:
+> ./xmreg01 --address 48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU --viewkey 1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a --txhash 66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577
+
+Изпълнението извежда следния резултат: 
+     
+    address          : <48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU>
+    private view key : <1ddabaa51cea5f6d9068728dc08c7ffaefe39a7a4b5f39fa8a976ecbe2cb520a>
+    tx hash          : <66040ad29f0d780b4d47641a67f410c28cce575b5324c43b784bb376f4e30577>
+    public tx key    : <0851f2ec7477b82618e028238164a9080325fe299dcf5f70f868729b50d00284>
+    dervied key      : <8017f9944635b7b2e4dc2ddb9b81787e49b384dcb2abd474355fe62bee79fdd7>
+
+    Output no: 0, <c65ee61d95480988c1fd70f6078afafd4d90ef730fc3c4df59951d64136e911f>, not mine key
+    Output no: 1, <67a5fd7e06640942f0d869e494fc9d297d5087609013cd3531d0da55de19045b>, not mine key
+    Output no: 2, <a9e0f19422e68ed328315e92373388a3ebb418204a36d639bd1f2e870f4bc919>, mine key: 0.800000000000
+    Output no: 3, <849b56538f199f0a7522fcd0b132e53eec4a822e9b70b0e7e6c9e2632f1328db>, mine key: 4.000000000000
+    Output no: 4, <aba2e362f8ae0d79a4f33f9e4e27eecf79ad9c53eae86c27aa0281fb29aa6fdc>, not mine key
+    Output no: 5, <2602e4ac211216571ab1afe631aae1f905f252a1150cb8c4e5f34b820d0d6b4a>, not mine key
+
+    Total xmr received: 4.800000000000
+
+:exclamation: За пълния пример с настройките и коментари посетете [Monero Examples][25].
 
 # 5. Интересни факти #
 
@@ -102,8 +393,6 @@ Monero има няколко предимства пре криптовалут�
 <a href="https://monerujo.io"><img src="https://web.getmonero.org/img/Monerujo-wallet.png" width="100" height="100"/></a>
 <a href="https://mymonero.com"><img src="https://web.getmonero.org/img/mymonero.png" width="100" height="100"/></a>
 <a href="https://edge.app/"><img src="https://web.getmonero.org/img/edge-wallet.png" width="100" height="100"/></a>
-
-## Разработка на функционални пространства ##
 
 ## Мрежи за търговия ##
 
@@ -169,3 +458,8 @@ Monero има няколко предимства пре криптовалут�
 [18]: http://www.evonax.com/
 [19]: https://www.coindirect.com/buy/monero
 [20]: https://Anycoindirect.eu
+[21]: https://kovri.io
+[22]: http://moneroexamples.github.io/python-json-rpc/
+[23]: https://moneroblocks.info/api
+[24]: https://mymonero.com
+[25]: http://moneroexamples.github.io/access-blockchain-in-cpp/
